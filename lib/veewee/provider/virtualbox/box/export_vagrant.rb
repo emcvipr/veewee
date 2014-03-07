@@ -13,6 +13,15 @@ module Veewee
 
         #    Shellutil.execute("vagrant package --base #{vmname} --include /tmp/Vagrantfile --output /tmp/#{vmname}.box", {:progress => "on"})
 
+        def cygpath(s)
+            path = s
+            is_cygwin = (RbConfig::CONFIG['host_os'] =~ /cygwin/)
+            if is_cygwin
+              path = `/bin/cygpath -aw "#{s}"`.chomp.gsub!("\\", "\\\\\\\\")
+            end
+            path
+        end
+        
         def export_vagrant(options)
 
           # Check if box already exists
@@ -110,7 +119,7 @@ module Veewee
             end
 
             ui.info "Exporting the box"
-            command = "#{@vboxcmd} export \"#{name}\" --output #{File.join(tmp_dir,'box.ovf')}"
+            command = "#{@vboxcmd} export #{name} --output #{cygpath(File.join(tmp_dir,'box.ovf'))}"
             env.logger.debug("Command: #{command}")
             shell_exec(command, {:mute => false})
 
